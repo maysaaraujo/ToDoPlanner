@@ -1,0 +1,30 @@
+// Definição do DataSource e do Generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Definição das Entidades
+
+model User {
+  id    Int    @id @default(autoincrement())
+  nome  String
+  email String @unique
+  senha String
+  role  String // Ex: 'admin' ou 'user'
+  tasks Task[] @relation("UserTasks")
+}
+
+model Task {
+  id         Int      @id @default(autoincrement())
+  titulo     String
+  descricao  String
+  data       DateTime
+  prioridade Int
+  userId     Int
+  user       User     @relation("UserTasks", fields: [userId], references: [id], onDelete: Cascade)
+}
