@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Task } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const createTask = async (taskData: any) => {
+const createTask = async (titulo: string, descricao:string, data:Date, prioridade:number, userId:number) => {
   return await prisma.task.create({
-    data: taskData
+    data: {titulo, descricao, data, prioridade, userId}
   });
 };
 

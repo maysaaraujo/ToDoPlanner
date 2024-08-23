@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import * as taskService from '../services/taskService';
 
 // Cria uma nova tarefa
-export const createTask = async (req: Request, res: Response) => {
+const createTask = async (req: Request, res: Response) => {
   console.log('Dados recebidos na requisição POST:', req.body);
   try {
-    const taskData = req.body;
-    const task = await taskService.createTask(taskData);
+    
+    const task = await taskService.createTask(req.body);
     res.status(201).json({ message: 'Task criada com sucesso', resource: task });
   } catch (error: unknown) {
     if (error instanceof Error) {

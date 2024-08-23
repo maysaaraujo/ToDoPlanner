@@ -1,7 +1,9 @@
 import * as taskRepository from '../repositories/taskRepository';
 
-export const createTask = async (taskData: any) => {
-  return await taskRepository.createTask(taskData);
+const createTask = async (taskData: any) => {
+  const {titulo, descricao, data, prioridade, userId} = taskData;
+  return await taskRepository.createTask(titulo, descricao, data, prioridade, userId);
+
 };
 
 export const getAllTasks = async () => {
