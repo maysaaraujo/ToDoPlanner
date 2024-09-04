@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import * as userService from '../services/userService';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // Cria um novo User
 export const createUser = async (req: Request, res: Response) => {
@@ -60,5 +62,25 @@ export const deleteUser = async (req: Request, res: Response) => {
     } else {
       res.status(500).json({ message: 'Erro desconhecido ao deletar o user' });
     }
+  }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+      const { email, senha } = req.body;
+      const user = await userService.getUserByEmail(email);
+
+      if (!user || !await bcrypt.compare(senha, user.senha)) {
+          return res.status(401).json({ message: 'Credenciais inválidas' });
+      }
+
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+      res.status(200).json({ token });
+  } catch (error: unknown) {
+      if (error instanceof Error) {
+          res.status(500).json({ message: `Erro ao autenticar: ${error.message}` });
+      } else {
+          res.status(500).json({ message: 'Erro desconhecido ao autenticar' });
+      }
   }
 };

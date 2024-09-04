@@ -1,9 +1,12 @@
 import * as userRepository from '../repositories/userRepository';
+import bcrypt from 'bcryptjs';
 
+
+// Atualização na criação de usuário para hash da senha
 export const createUser = async (userData: any) => {
-  const {nome, email, senha, role} = userData;
-  return await userRepository.createUser(nome, email, senha, role);
-
+  const { nome, email, senha, role } = userData;
+  const hashedSenha = await bcrypt.hash(senha, 10);
+  return await userRepository.createUser(nome, email, hashedSenha, role);
 };
 
 export const getAllUsers = async () => {
@@ -17,3 +20,8 @@ export const updateUser = async (id: number, taskData: any) => {
 export const deleteUser = async (id: number) => {
   return await userRepository.deleteUser(id);
 };
+export const getUserByEmail = async (email: string) => {
+  return await userRepository.getUserByEmail(email);
+};
+
+

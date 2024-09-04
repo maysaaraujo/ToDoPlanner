@@ -1,4 +1,4 @@
-import { PrismaClient, Task } from '@prisma/client';
+import { PrismaClient, Task} from '@prisma/client';
 
 const prisma = new PrismaClient();
 

@@ -27,4 +27,5 @@ model Task {
   prioridade Int
   userId     Int
   user       User     @relation("UserTasks", fields: [userId], references: [id], onDelete: Cascade)
+  @@map("task")
 }
