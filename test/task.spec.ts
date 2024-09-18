@@ -1,31 +1,34 @@
-import { Task } from "@prisma/client";
+import { Task, User } from "@prisma/client";
 import * as taskService from "../src/services/taskService";
-import chai from "chai";
+import * as userService from '../src/services/userService';
 
 
 
 describe("testes task", () => {
-    it('cria task com sucesso', () => {
-        taskService.createTask({id:1, titulo: "teste", descricao:"testa aqui", data: new Date().getDate, prioridade:0})
-        const task = taskService.getAllTasks() 
-        chai.expect(task).to.have.lengthOf(1)
+    let admin : User
+    let taskDefault : Task 
+    beforeAll(async () => {
+        admin = await userService.createUser({nome:"task", email: "task.email", senha:"task", role: "user"})
+        taskDefault = await taskService.createTask({userId:admin.id, titulo: "task padrão", descricao:"uma task padrão", data: new Date(), prioridade:0})
+    })
+    it('cria task com sucesso', async () => {
+        await taskService.createTask({userId:admin.id, titulo: "teste", descricao:"testa aqui", data: new Date(), prioridade:0})
+        expect(await taskService.getAllTasks()).not.toEqual([])
     });
 
-    it('Pega task com sucesso', () => {
-        const task = taskService.getAllTasks() 
-        chai.expect(task).to.have.lengthOf(1)
+    it('atualiza task com sucesso', async() => {
+        const taskAntiga = await taskService.getAllTasks() 
+        await taskService.updateTask(taskDefault.id, {titulo: "atualizaTask"})
+        const taskNova = await taskService.getAllTasks()
+        expect(taskNova[0].titulo).not.toEqual(taskAntiga[0].titulo)
     })
 
-    it('atualiza task com sucesso', () => {
-        const taskAntiga = taskService.getAllTasks() 
-        taskService.updateTask(1, {titulo: "atualizaTask"})
-        const taskNova = taskService.getAllTasks()
-        chai.expect(taskNova).to.not.equal(taskAntiga)
-    })
-
-    it('Deleta task com sucesso', () => {
-        taskService.deleteTask(1)
-        const task = taskService.getAllTasks() 
-        chai.expect(task).to.have.lengthOf(0)
+    it('Deleta task com sucesso',async() => {
+        let tasks = await taskService.getAllTasks()
+        const numTaskAntes = tasks.length
+        taskService.deleteTask(taskDefault.id)
+        tasks = await taskService.getAllTasks()
+        const numTaskDepois = tasks.length
+        expect(numTaskAntes).not.toEqual(numTaskDepois)
     })
 })

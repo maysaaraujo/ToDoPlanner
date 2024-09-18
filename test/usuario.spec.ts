@@ -1,30 +1,32 @@
+import { User } from '@prisma/client';
 import * as userService from '../src/services/userService';
-import chai from "chai";
+
 
 
 
 describe("testes usuario", () => {
-    it('cria usuario com sucesso', () => {
-        
-        userService.createUser({nome:"teste", email: "teste.email", senha:"testa", role: "admin"})
-        const user = userService.getUserByEmail("teste.email")
-        chai.expect(user).to.have.lengthOf(1)
+    let admin : User
+    beforeAll(async () => {
+        admin = await userService.createUser({nome:"admin", email: "admin.email", senha:"admin", role: "admin"})
+    })
+    it('cria usuario com sucesso', async () => {
+        const usuario = await userService.createUser({nome:"teste", email: "teste.email", senha:"testa", role: "user"})
+        expect(userService.getUserByEmail(usuario.email)).not.toBeNull()
     });
-    it('Pega usuario com sucesso', () => {
-        const task = userService.getUserByEmail("teste.email") 
-        chai.expect(task).to.have.lengthOf(1)
+    it('Pega usuario com sucesso', async() => {
+        const task = await userService.getUserByEmail(admin.email) 
+        expect(task).not.toBeNull()
     })
 
-    it('atualiza usario com sucesso', () => {
-        const userAntigo = userService.getUserByEmail("teste.email") 
-        userService.updateUser(1, {nome: "testado"})
-        const userNovo = userService.getUserByEmail("teste.email") 
-        chai.expect(userAntigo).to.not.equal(userNovo)
+    it('atualiza usario com sucesso', async () => {
+        const userAntigo = await userService.getUserByEmail(admin.email) 
+        await userService.updateUser(1, {nome: "testado"}) 
+        const userNovo = await userService.getUserByEmail(admin.email)
+        expect(userAntigo).not.toEqual(userNovo)
     })
 
-    it('Deleta user com sucesso', () => {
-        userService.deleteUser(1)
-        const task = userService.getUserByEmail("teste.email") 
-        chai.expect(task).to.have.lengthOf(0)
+    it('Deleta user com sucesso', async() => {
+        await userService.deleteUser(admin.id)
+        expect(await userService.getUserByEmail(admin.email) ).toBeNull()
     })
 })

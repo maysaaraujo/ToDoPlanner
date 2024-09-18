@@ -4,7 +4,7 @@
   "description": "Project for Web2 course",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register 'test/**/*.ts'",
+    "test": "jest",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts"
@@ -14,13 +14,9 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.18.0",
-    "@types/chai": "^4.3.19",
-    "@types/mocha": "^10.0.7",
     "bcryptjs": "^2.4.3",
-    "chai": "^5.1.1",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
-    "mocha": "^10.7.3"
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -38,7 +34,15 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "prettier": "^3.3.3",
     "prisma": "^5.18.0",
-    "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
-  }
+  },
+  "jest": {
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.ts$": "ts-jest"
+  },
+  "moduleFileExtensions": ["ts", "js", "json", "node"],
+  "testMatch": ["**/?(*.)+(spec|test).ts?(x)"]
+}
 }
