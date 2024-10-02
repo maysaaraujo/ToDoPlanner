@@ -3,21 +3,19 @@ import * as userService from '../services/userService';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Cria um novo User
+// Função para criar um novo usuário
 export const createUser = async (req: Request, res: Response) => {
   try {
-    
-    const user = await userService.createUser(req.body);
-    res.status(201).json({ message: 'user criado com sucesso', resource: user });
+    const user = await userService.createUser(req.body); // Aqui está chamando o service de criação
+    res.status(201).json({ message: 'Usuário criado com sucesso', resource: user });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      res.status(500).json({ message: `Não foi possível criar o user: ${error.message}` });
+      res.status(500).json({ message: `Não foi possível criar o usuário: ${error.message}` });
     } else {
-      res.status(500).json({ message: 'Erro desconhecido ao criar o user' });
+      res.status(500).json({ message: 'Erro desconhecido ao criar o usuário' });
     }
   }
 };
-
 
 
 // Obtém todas os users

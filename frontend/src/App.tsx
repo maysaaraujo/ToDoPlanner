@@ -1,11 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Home from './pages/Home';
-import TaskList from './components/TaskList';
-import TaskForm from './components/TaskForm';
 import Login from './pages/Login';
 import UserForm from './components/UserForm'; // Importe o formulário de criação de usuário
-import ProtectedRoute from './components/ProtectedRoute'; // Para proteger as rotas
 
 function App() {
   return (
@@ -25,10 +22,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/create-user" element={<UserForm />} /> {/* Rota para o formulário de cadastro */}
-
-          {/* Rotas protegidas */}
-          <Route path="/tasks" element={<ProtectedRoute><TaskList /></ProtectedRoute>} />
-          <Route path="/create-task" element={<ProtectedRoute><TaskForm /></ProtectedRoute>} />
+          {/* Outras rotas aqui */}
         </Routes>
       </div>
     </Router>

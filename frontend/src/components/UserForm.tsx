@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createUser } from '../api'; // Função para enviar a requisição ao backend
+import { createUser } from '../api'; // Importar a função de criação de usuário da API
 
 function UserForm() {
   const [userData, setUserData] = useState({
@@ -8,27 +8,27 @@ function UserForm() {
     senha: '',
     role: 'user', // Valor padrão como "user"
   });
-
+  
   const [message, setMessage] = useState('');
 
-  // Função para tratar o envio do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createUser(userData); // Envia os dados ao backend
+      // Chama a função de criação de usuário
+      await createUser(userData);
       setMessage('Usuário criado com sucesso!');
+      // Limpa o formulário
       setUserData({
         nome: '',
         email: '',
         senha: '',
-        role: 'user', // Reseta o formulário após o sucesso
+        role: 'user',
       });
     } catch (error) {
       setMessage('Erro ao criar o usuário. Tente novamente.');
     }
   };
 
-  // Função para atualizar os valores do formulário
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserData({
       ...userData,
