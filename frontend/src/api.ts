@@ -7,7 +7,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token'); // Pegue o token do localStorage
   if (token) {
-    config.headers.Authorization =  token; // Adicione o token no cabeçalho de autorização
+    config.headers.Authorization = token; // Adicione o token no cabeçalho de autorização
   }
   return config;
 });
@@ -23,6 +23,19 @@ export const createTask = async (task: any) => {
     return response;
   } catch (error) {
     console.error("Erro ao criar tarefa:", error);
+    throw error;
+  }
+};
+
+// Função para atualizar uma tarefa existente
+export const updateTask = async (taskId: number, task: any) => {
+  try {
+    console.log("Tentando atualizar tarefa:", task);
+    const response = await api.put(`/tasks/${taskId}`, task);
+    console.log("Resposta da atualização da tarefa:", response);
+    return response;
+  } catch (error) {
+    console.error("Erro ao atualizar tarefa:", error);
     throw error;
   }
 };
