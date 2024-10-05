@@ -4,9 +4,20 @@ const api = axios.create({
   baseURL: 'http://localhost:3000', // URL do backend
 });
 
-export const fetchTasks = () => api.get('/tasks');
-export const createTask = (taskData: any) => api.post('/tasks', taskData);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token'); // Pegue o token do localStorage
+  if (token) {
+    config.headers.Authorization =  token; // Adicione o token no cabeçalho de autorização
+  }
+  return config;
+});
 
+export const fetchTasks = () => api.get('/tasks');
+
+// Função para criar uma tarefa
+export const createTask = (task: any) => {
+  return api.post('/tasks', task);
+};
 // Função de login
 export const login = (credentials: { email: string; senha: string }) => {
   return api.post('/login', credentials);

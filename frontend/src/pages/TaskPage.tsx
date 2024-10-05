@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTasks, createTask } from '../api'; 
+import { fetchTasks, createTask } from '../api'; // Funções da API para obter e criar tarefas
 import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -13,7 +13,8 @@ const TaskPage = () => {
   });
   const [error, setError] = useState('');
 
-  useEffect(() => {
+   // Função para buscar as tarefas
+   useEffect(() => {
     const getTasks = async () => {
       try {
         const response = await fetchTasks();
@@ -26,7 +27,10 @@ const TaskPage = () => {
     getTasks();
   }, []);
 
+  // Função para criar uma nova tarefa
   const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validação da prioridade
     if (newTask.prioridade < 1 || newTask.prioridade > 3) {
       setError('A prioridade deve estar entre 1 e 3');
       return;
@@ -52,25 +56,26 @@ const TaskPage = () => {
 
   return (
     <div>
+      {/* Barra de navegação */}
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
-            ToDo Planner
+          <Typography variant="h6">
+            <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Home</Link>
           </Typography>
-          <Button color="inherit" component={Link} to="/">
-            Home
-          </Button>
         </Toolbar>
       </AppBar>
 
+      {/* Conteúdo da página de tarefas */}
       <Container style={{ marginTop: '30px' }}>
         <Typography variant="h4" align="center" gutterBottom>
           Lista de Tarefas
         </Typography>
 
+        {/* Exibe mensagem de erro ou nenhuma tarefa */}
         {error && <Typography color="error">{error}</Typography>}
         {tasks.length === 0 && <Typography color="textSecondary">Nenhuma tarefa foi adicionada.</Typography>}
 
+        {/* Lista de tarefas */}
         <Grid container spacing={2} style={{ marginTop: '20px' }}>
           {tasks.map((task: any) => (
             <Grid item xs={12} key={task.id}>
@@ -84,6 +89,7 @@ const TaskPage = () => {
           ))}
         </Grid>
 
+        {/* Formulário de criação de tarefas */}
         <Typography variant="h5" style={{ marginTop: '40px' }} align="center">
           Criar Nova Tarefa
         </Typography>
@@ -136,10 +142,12 @@ const TaskPage = () => {
                 required
               />
             </Grid>
-            <Grid item xs={12} alignItems="center" justifyContent="center">
-              <Button type="submit" variant="contained" color="primary">
-                Criar Tarefa
-              </Button>
+            <Grid container justifyContent="center">
+              <Grid item>
+                <Button type="submit" variant="contained" color="primary">
+                  Criar Tarefa
+                </Button>
+              </Grid>
             </Grid>
           </Grid>
         </form>
