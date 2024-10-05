@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Para redirecionar o usuário após login
-import { login } from '../api'; // Função para fazer a requisição ao backend
+import { useNavigate, Link } from 'react-router-dom';
+import { login } from '../api';
+import { AppBar, Toolbar, Typography, Container, TextField, Button, Box } from '@mui/material';
 
-function Login() {
+const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', senha: '' });
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Hook para redirecionamento
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,11 +15,8 @@ function Login() {
       const token = response.data.token;
 
       if (token) {
-        // Salva o token no localStorage ou sessionStorage
         localStorage.setItem('token', token);
-
-        // Redireciona o usuário após o login
-        navigate('/tasks');
+        navigate('/tasks'); // Redireciona para a página de tarefas
       }
     } catch (error) {
       setError('Login falhou. Verifique suas credenciais.');
@@ -34,33 +32,47 @@ function Login() {
 
   return (
     <div>
-      <h2>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6">
+            <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Home</Link>
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Container maxWidth="sm" style={{ marginTop: '50px' }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
+        >
+          <Typography variant="h4">Login</Typography>
+          {error && <Typography color="error">{error}</Typography>}
+          <TextField
             name="email"
-            type="email"
+            label="Email"
+            variant="outlined"
+            fullWidth
             value={credentials.email}
             onChange={handleChange}
             required
           />
-        </div>
-        <div>
-          <label>Senha:</label>
-          <input
+          <TextField
             name="senha"
+            label="Senha"
             type="password"
+            variant="outlined"
+            fullWidth
             value={credentials.senha}
             onChange={handleChange}
             required
           />
-        </div>
-        <button type="submit">Login</button>
-      </form>
+          <Button variant="contained" color="primary" type="submit">
+            Login
+          </Button>
+        </Box>
+      </Container>
     </div>
   );
-}
+};
 
 export default Login;
