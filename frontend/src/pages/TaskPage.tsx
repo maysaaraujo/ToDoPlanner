@@ -10,14 +10,21 @@ const TaskPage = () => {
     descricao: '',
     data: '',
     prioridade: 1,
+    userId: null,
   });
   const [error, setError] = useState('');
 
-   // Função para buscar as tarefas
-   useEffect(() => {
+  useEffect(() => {
+    const userId = getUserIdFromToken();
+    console.log("User ID extraído do token:", userId);
+    if (userId) {
+      setNewTask((prev) => ({ ...prev, userId }));
+    }
+
     const getTasks = async () => {
       try {
         const response = await fetchTasks();
+        console.log("Tarefas recebidas do servidor:", response.data.resource);
         setTasks(response.data.resource);
       } catch (error) {
         setError('Erro ao carregar as tarefas');
@@ -27,9 +34,31 @@ const TaskPage = () => {
     getTasks();
   }, []);
 
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.uid;
+    } catch (e) {
+      console.error('Erro ao decodificar o token:', e);
+      return null;
+    }
+  };
+
   // Função para criar uma nova tarefa
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Garantir que a data esteja no formato ISO completo
+    const formattedTask = {
+      ...newTask,
+      data: newTask.data ? newTask.data + 'T00:00:00Z' : '', // Formato ISO esperado pelo backend
+    };
+
+    console.log("Nova tarefa que será enviada:", formattedTask);
+
     // Validação da prioridade
     if (newTask.prioridade < 1 || newTask.prioridade > 3) {
       setError('A prioridade deve estar entre 1 e 3');
@@ -37,12 +66,13 @@ const TaskPage = () => {
     }
 
     try {
-      await createTask(newTask);
-      setNewTask({ titulo: '', descricao: '', data: '', prioridade: 1 });
+      await createTask(formattedTask);
+      setNewTask((prev) => ({ ...prev, titulo: '', descricao: '', data: '', prioridade: 1 }));
       setError('');
       const response = await fetchTasks();
       setTasks(response.data.resource);
     } catch (error) {
+      console.error('Erro ao criar tarefa:', error);
       setError('Erro ao criar a tarefa');
     }
   };

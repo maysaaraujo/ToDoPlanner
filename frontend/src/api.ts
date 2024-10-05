@@ -15,9 +15,18 @@ api.interceptors.request.use((config) => {
 export const fetchTasks = () => api.get('/tasks');
 
 // Função para criar uma tarefa
-export const createTask = (task: any) => {
-  return api.post('/tasks', task);
+export const createTask = async (task: any) => {
+  try {
+    console.log("Tentando criar tarefa:", task);
+    const response = await api.post('/tasks', task);
+    console.log("Resposta da criação da tarefa:", response);
+    return response;
+  } catch (error) {
+    console.error("Erro ao criar tarefa:", error);
+    throw error;
+  }
 };
+
 // Função de login
 export const login = (credentials: { email: string; senha: string }) => {
   return api.post('/login', credentials);
