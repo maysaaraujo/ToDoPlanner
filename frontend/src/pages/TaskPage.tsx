@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTasks, createTask } from '../api'; // Funções da API para obter e criar tarefas
-import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid } from '@mui/material';
+import { fetchTasks, createTask } from '../api';
+import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid, Chip } from '@mui/material';
 import { Link } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 const TaskPage = () => {
   const [tasks, setTasks] = useState([]);
@@ -16,7 +17,6 @@ const TaskPage = () => {
 
   useEffect(() => {
     const userId = getUserIdFromToken();
-    console.log("User ID extraído do token:", userId);
     if (userId) {
       setNewTask((prev) => ({ ...prev, userId }));
     }
@@ -24,8 +24,9 @@ const TaskPage = () => {
     const getTasks = async () => {
       try {
         const response = await fetchTasks();
-        console.log("Tarefas recebidas do servidor:", response.data.resource);
-        setTasks(response.data.resource);
+        // Filtra tarefas apenas do usuário logado
+        const userTasks = response.data.resource.filter((task: any) => task.userId === userId);
+        setTasks(userTasks);
       } catch (error) {
         setError('Erro ao carregar as tarefas');
       }
@@ -47,19 +48,14 @@ const TaskPage = () => {
     }
   };
 
-  // Função para criar uma nova tarefa
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Garantir que a data esteja no formato ISO completo
     const formattedTask = {
       ...newTask,
       data: newTask.data ? newTask.data + 'T00:00:00Z' : '', // Formato ISO esperado pelo backend
     };
 
-    console.log("Nova tarefa que será enviada:", formattedTask);
-
-    // Validação da prioridade
     if (newTask.prioridade < 1 || newTask.prioridade > 3) {
       setError('A prioridade deve estar entre 1 e 3');
       return;
@@ -70,7 +66,9 @@ const TaskPage = () => {
       setNewTask((prev) => ({ ...prev, titulo: '', descricao: '', data: '', prioridade: 1 }));
       setError('');
       const response = await fetchTasks();
-      setTasks(response.data.resource);
+      const userId = getUserIdFromToken();
+      const userTasks = response.data.resource.filter((task: any) => task.userId === userId);
+      setTasks(userTasks);
     } catch (error) {
       console.error('Erro ao criar tarefa:', error);
       setError('Erro ao criar a tarefa');
@@ -84,9 +82,20 @@ const TaskPage = () => {
     });
   };
 
+  const getPriorityColor = (prioridade: number) => {
+    switch (prioridade) {
+      case 1:
+        return 'error'; // Vermelha
+      case 2:
+        return 'warning'; // Amarela
+      case 3:
+      default:
+        return 'success'; // Verde
+    }
+  };
+
   return (
     <div>
-      {/* Barra de navegação */}
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6">
@@ -95,31 +104,31 @@ const TaskPage = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Conteúdo da página de tarefas */}
       <Container style={{ marginTop: '30px' }}>
         <Typography variant="h4" align="center" gutterBottom>
           Lista de Tarefas
         </Typography>
 
-        {/* Exibe mensagem de erro ou nenhuma tarefa */}
         {error && <Typography color="error">{error}</Typography>}
-        {tasks.length === 0 && <Typography color="textSecondary">Nenhuma tarefa foi adicionada.</Typography>}
+        {tasks.length === 0 && <Typography color="textSecondary" align="center">Nenhuma tarefa foi adicionada.</Typography>}
 
-        {/* Lista de tarefas */}
         <Grid container spacing={2} style={{ marginTop: '20px' }}>
           {tasks.map((task: any) => (
-            <Grid item xs={12} key={task.id}>
-              <Paper style={{ padding: '15px' }}>
-                <Typography variant="h6">{task.titulo}</Typography>
-                <Typography variant="body1">{task.descricao}</Typography>
-                <Typography variant="body2">Data: {task.data}</Typography>
-                <Typography variant="body2">Prioridade: {task.prioridade}</Typography>
+            <Grid item xs={12} sm={6} md={4} key={task.id}>
+              <Paper elevation={3} style={{ padding: '20px', position: 'relative' }}>
+                <Typography variant="h6" gutterBottom>{task.titulo}</Typography>
+                <Typography variant="body1" gutterBottom>{task.descricao}</Typography>
+                <Typography variant="body2" gutterBottom>Data: {dayjs(task.data).format('YYYY-MM-DD')}</Typography>
+                <Chip
+                  label={`Prioridade ${task.prioridade}`}
+                  color={getPriorityColor(task.prioridade)}
+                  style={{ position: 'absolute', top: '10px', right: '10px' }}
+                />
               </Paper>
             </Grid>
           ))}
         </Grid>
 
-        {/* Formulário de criação de tarefas */}
         <Typography variant="h5" style={{ marginTop: '40px' }} align="center">
           Criar Nova Tarefa
         </Typography>
@@ -168,7 +177,7 @@ const TaskPage = () => {
                 type="number"
                 value={newTask.prioridade}
                 onChange={handleChange}
-                inputProps={{ min: 1, max: 3 }} // Limita o valor entre 1 e 3
+                inputProps={{ min: 1, max: 3 }}
                 required
               />
             </Grid>
