@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTasks, createTask, updateTask } from '../api'; // Importando a função de atualização de tarefas
-import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid, Chip } from '@mui/material';
+import { fetchTasks, createTask, updateTask } from '../api';
+import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid, Chip, Pagination } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 // Definindo uma interface para a tarefa
@@ -23,6 +23,8 @@ const TaskPage = () => {
   });
   const [error, setError] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 6;
 
   useEffect(() => {
     const userId = getUserIdFromToken();
@@ -61,7 +63,7 @@ const TaskPage = () => {
 
     const formattedTask = {
       ...newTask,
-      data: newTask.data ? newTask.data + 'T00:00:00.000Z' : '', // Formato ISO completo esperado pelo backend
+      data: newTask.data ? newTask.data + 'T00:00:00.000Z' : '',
     };
 
     // Validação da prioridade
@@ -76,13 +78,11 @@ const TaskPage = () => {
         await updateTask(editingTaskId, { ...formattedTask, id: editingTaskId });
         setEditingTaskId(null);
       } else {
-        // Criando uma nova tarefa
-        await createTask(formattedTask);
+        const response = await createTask(formattedTask);
+        setTasks((prevTasks) => [...prevTasks, response.data.resource]); // Adiciona a nova tarefa à lista existente
       }
-      setNewTask({ titulo: '', descricao: '', data: '', prioridade: 1 });
+      setNewTask({ titulo: '', descricao: '', data: '', prioridade: 1, userId: newTask.userId }); // Reset do form
       setError('');
-      const response = await fetchTasks();
-      setTasks(response.data.resource.filter((task: Task) => task.userId === newTask.userId));
     } catch (error) {
       console.error('Erro ao criar ou editar tarefa:', error);
       setError('Erro ao criar ou editar a tarefa');
@@ -94,7 +94,7 @@ const TaskPage = () => {
 
     setNewTask((prevTask) => ({
       ...prevTask,
-      [name]: name === 'prioridade' ? parseInt(value) : value, // Corrigido para garantir que prioridade seja um número
+      [name]: name === 'prioridade' ? parseInt(value) : value,
     }));
   };
 
@@ -118,9 +118,16 @@ const TaskPage = () => {
     });
   };
 
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+  };
+
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+
   return (
     <div>
-      {/* Barra de navegação */}
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6">
@@ -129,28 +136,25 @@ const TaskPage = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Conteúdo da página de tarefas */}
       <Container style={{ marginTop: '30px' }}>
         <Typography variant="h4" align="center" gutterBottom>
           Lista de Tarefas
         </Typography>
 
-        {/* Exibe mensagem de erro ou nenhuma tarefa */}
         {error && <Typography color="error">{error}</Typography>}
         {tasks.length === 0 && <Typography color="textSecondary">Nenhuma tarefa foi adicionada.</Typography>}
 
-        {/* Lista de tarefas */}
         <Grid container spacing={3} style={{ marginTop: '20px' }}>
-          {tasks.map((task: Task) => (
+          {currentTasks.map((task: Task) => (
             <Grid item xs={12} sm={6} md={4} key={task.id}>
               <Paper
                 style={{
                   padding: '15px',
                   border: '1px solid #ddd',
                   borderRadius: '10px',
-                  maxHeight: '300px', // Limitação da altura do card
-                  overflow: 'hidden', // Evita que o texto "vaze"
-                  wordWrap: 'break-word', // Quebra o texto em palavras para evitar vazamentos
+                  maxHeight: '300px',
+                  overflow: 'hidden',
+                  wordWrap: 'break-word',
                 }}
               >
                 <Typography variant="h6" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -161,7 +165,6 @@ const TaskPage = () => {
                 </Typography>
                 <Typography variant="body2">Data: {formatDate(task.data)}</Typography>
 
-                {/* Tag de prioridade */}
                 <Chip
                   label={`Prioridade ${task.prioridade}`}
                   style={{
@@ -185,7 +188,14 @@ const TaskPage = () => {
           ))}
         </Grid>
 
-        {/* Formulário de criação/edição de tarefas */}
+        <Pagination
+          count={Math.ceil(tasks.length / tasksPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+          style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}
+        />
+
         <Typography variant="h5" style={{ marginTop: '40px' }} align="center">
           {editingTaskId ? 'Editar Tarefa' : 'Criar Nova Tarefa'}
         </Typography>
@@ -234,7 +244,7 @@ const TaskPage = () => {
                 type="number"
                 value={newTask.prioridade || 1}
                 onChange={handleChange}
-                inputProps={{ min: 1, max: 3 }} // Limita o valor entre 1 e 3
+                inputProps={{ min: 1, max: 3 }}
                 required
               />
             </Grid>
