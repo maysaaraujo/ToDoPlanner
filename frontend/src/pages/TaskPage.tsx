@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTasks, createTask, updateTask, deleteTask } from '../api'; // Importando a função de deletar tarefas
-import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid, Chip, Pagination } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../api'; 
+import { AppBar, Toolbar, Typography, Button, IconButton, TextField, Container, Paper, Grid, Chip, Pagination } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom'; 
+
 
 // Definindo uma interface para a tarefa
 interface Task {
@@ -25,6 +26,7 @@ const TaskPage = () => {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 6;
+  const navigate = useNavigate(); // Hook para redirecionar o usuário
 
   useEffect(() => {
     const userId = getUserIdFromToken();
@@ -73,7 +75,6 @@ const TaskPage = () => {
 
     try {
       if (editingTaskId) {
-        // Editando uma tarefa existente
         await updateTask(editingTaskId, { ...formattedTask, id: editingTaskId });
         setTasks((prevTasks) => prevTasks.map((task) => task.id === editingTaskId ? { ...task, ...formattedTask } : task)); // Atualiza a lista localmente
         setEditingTaskId(null);
@@ -99,15 +100,15 @@ const TaskPage = () => {
 
   // Função para deletar uma tarefa
   const handleDeleteTask = async (taskId: number) => {
-    const userId = getUserIdFromToken();
+    const userId = getUserIdFromToken(); // Pegue o userId do token
     if (!userId) {
       setError('Erro: usuário não autenticado.');
       return;
     }
 
     try {
-      await deleteTask(taskId, userId); 
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId)); 
+      await deleteTask(taskId, userId); // Passa o taskId e o userId
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId)); // Remove a tarefa excluída da lista
     } catch (error) {
       console.error('Erro ao deletar tarefa:', error);
       setError('Erro ao deletar a tarefa');
@@ -142,13 +143,21 @@ const TaskPage = () => {
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
   const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
 
+  // Função de logout
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove o token do localStorage
+    navigate('/login'); 
+  };
+
   return (
     <div>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6">
-            <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Home</Link>
-          </Typography>
+          {/* Botão de Logout no canto direito */}
+          <IconButton color="inherit" onClick={handleLogout} style={{ marginLeft: 'auto' }}>
+            Logout
+          </IconButton>
+
         </Toolbar>
       </AppBar>
 
