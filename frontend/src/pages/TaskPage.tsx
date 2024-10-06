@@ -109,6 +109,15 @@ const TaskPage = () => {
     setEditingTaskId(task.id);
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
   return (
     <div>
       {/* Barra de navegação */}
@@ -150,7 +159,7 @@ const TaskPage = () => {
                 <Typography variant="body1" style={{ marginBottom: '10px', wordWrap: 'break-word' }}>
                   {task.descricao}
                 </Typography>
-                <Typography variant="body2">Data: {task.data.split('T')[0]}</Typography>
+                <Typography variant="body2">Data: {formatDate(task.data)}</Typography>
 
                 {/* Tag de prioridade */}
                 <Chip
