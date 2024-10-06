@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTasks, createTask, updateTask } from '../api';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../api'; // Importando a função de deletar tarefas
 import { AppBar, Toolbar, Typography, Button, TextField, Container, Paper, Grid, Chip, Pagination } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -66,7 +66,6 @@ const TaskPage = () => {
       data: newTask.data ? newTask.data + 'T00:00:00.000Z' : '',
     };
 
-    // Validação da prioridade
     if (newTask.prioridade! < 1 || newTask.prioridade! > 3) {
       setError('A prioridade deve estar entre 1 e 3');
       return;
@@ -74,14 +73,13 @@ const TaskPage = () => {
 
     try {
       if (editingTaskId) {
-        // Editando uma tarefa existente
         await updateTask(editingTaskId, { ...formattedTask, id: editingTaskId });
         setEditingTaskId(null);
       } else {
         const response = await createTask(formattedTask);
         setTasks((prevTasks) => [...prevTasks, response.data.resource]); // Adiciona a nova tarefa à lista existente
       }
-      setNewTask({ titulo: '', descricao: '', data: '', prioridade: 1, userId: newTask.userId }); // Reset do form
+      setNewTask({ titulo: '', descricao: '', data: '', prioridade: 1, userId: newTask.userId });
       setError('');
     } catch (error) {
       console.error('Erro ao criar ou editar tarefa:', error);
@@ -91,12 +89,29 @@ const TaskPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setNewTask((prevTask) => ({
       ...prevTask,
       [name]: name === 'prioridade' ? parseInt(value) : value,
     }));
   };
+
+  // Função para deletar uma tarefa
+  const handleDeleteTask = async (taskId: number) => {
+    const userId = getUserIdFromToken(); // Pegue o userId do token
+    if (!userId) {
+      setError('Erro: usuário não autenticado.');
+      return;
+    }
+
+    try {
+      await deleteTask(taskId, userId); // Passa o taskId e o userId
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId)); // Remove a tarefa excluída da lista
+    } catch (error) {
+      console.error('Erro ao deletar tarefa:', error);
+      setError('Erro ao deletar a tarefa');
+    }
+  };
+
 
   const handleEditTask = (task: Task) => {
     setNewTask({
@@ -176,13 +191,28 @@ const TaskPage = () => {
                   }}
                 />
 
-                <Button
-                  onClick={() => handleEditTask(task)}
-                  variant="outlined"
-                  style={{ marginTop: '15px', display: 'block' }}
-                >
-                  Editar
-                </Button>
+                <Grid container spacing={2} >
+                  <Grid item>
+                    <Button
+                      onClick={() => handleEditTask(task)}
+                      variant="outlined"
+                      style={{ marginTop: '10px' }}
+                    >
+                      Editar
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      onClick={() => handleDeleteTask(task.id)}
+                      variant="outlined"
+                      color="secondary"
+                      style={{ marginTop: '10px' }}
+                    >
+                      Deletar
+                    </Button>
+                  </Grid>
+                </Grid>
+
               </Paper>
             </Grid>
           ))}

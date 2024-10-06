@@ -40,6 +40,19 @@ export const updateTask = async (taskId: number, task: any) => {
   }
 };
 
+// Função para deletar uma tarefa
+export const deleteTask = async (taskId: number, userId: number) => {
+  try {
+    console.log(`Tentando deletar tarefa com ID: ${taskId}`);
+    const response = await api.delete(`/tasks/${taskId}`, { data: { id: taskId, userId } });
+    console.log("Resposta da exclusão da tarefa:", response);
+    return response;
+  } catch (error) {
+    console.error("Erro ao deletar tarefa:", error);
+    throw error;
+  }
+};
+
 // Função de login
 export const login = (credentials: { email: string; senha: string }) => {
   return api.post('/login', credentials);
