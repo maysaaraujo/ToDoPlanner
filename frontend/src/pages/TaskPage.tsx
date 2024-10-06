@@ -73,7 +73,9 @@ const TaskPage = () => {
 
     try {
       if (editingTaskId) {
+        // Editando uma tarefa existente
         await updateTask(editingTaskId, { ...formattedTask, id: editingTaskId });
+        setTasks((prevTasks) => prevTasks.map((task) => task.id === editingTaskId ? { ...task, ...formattedTask } : task)); // Atualiza a lista localmente
         setEditingTaskId(null);
       } else {
         const response = await createTask(formattedTask);
@@ -97,21 +99,20 @@ const TaskPage = () => {
 
   // Função para deletar uma tarefa
   const handleDeleteTask = async (taskId: number) => {
-    const userId = getUserIdFromToken(); // Pegue o userId do token
+    const userId = getUserIdFromToken();
     if (!userId) {
       setError('Erro: usuário não autenticado.');
       return;
     }
 
     try {
-      await deleteTask(taskId, userId); // Passa o taskId e o userId
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId)); // Remove a tarefa excluída da lista
+      await deleteTask(taskId, userId); 
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId)); 
     } catch (error) {
       console.error('Erro ao deletar tarefa:', error);
       setError('Erro ao deletar a tarefa');
     }
   };
-
 
   const handleEditTask = (task: Task) => {
     setNewTask({
