@@ -46,3 +46,93 @@ O ToDoPlanner oferece as seguintes funcionalidades:
   - Atualizar e editar tarefas.
   - Deletar tarefas.
 
+## Instalação e Execução
+
+Clone o repositório:
+
+```bash
+git clone https://github.com/seu-usuario/ToDoPlanner.git
+```
+
+Entre no diretório do projeto:
+```bash
+cd ToDoPlanner
+```
+
+Instale as dependências:
+```bash
+npm install
+```
+**Configure o banco de dados:**
+
+Crie um banco de dados PostgreSQL chamado todoplanner (ou outro nome à sua escolha).
+No arquivo .env na raiz do projeto, adicione a URL de conexão com seu banco de dados PostgreSQL:
+```bash
+DATABASE_URL="postgresql://seu-usuario:senha@localhost:5432/todoplanner"
+JWT_SECRET="seu-segredo-jwt"
+```
+Crie o arquivo docker-compose.yml com a seguinte configuração:
+```bash
+version: '3'
+services:
+  database:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: seu-usuario
+      POSTGRES_PASSWORD: senha
+      POSTGRES_DB: todoplanner
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    command: npm run dev
+    environment:
+      DATABASE_URL: postgresql://seu-usuario:senha@database:5432/todoplanner
+      JWT_SECRET: seu-segredo-jwt
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+```
+Inicie os contêineres com o Docker Compose:
+```bash
+docker-compose up --build
+```
+Rode as migrações do Prisma para criar as tabelas no banco de dados
+```bash
+docker-compose exec backend npx prisma migrate dev
+```
+Inicie o servidor
+```bash
+npm run dev
+```
+Agora, o servidor estará rodando em http://localhost:3000.
+
+**Para rodar o Frontend**
+
+Entre no diretório do frontend:
+```bash
+cd frontend
+```
+Instale as dependências:
+```bash
+npm install
+```
+Inicie o frontend
+```bash
+npm start
+```
+O frontend estará disponível em http://localhost:3001 
